@@ -505,10 +505,10 @@
 
   /* SNS 인증 유도 */
   .cert-sns-wrap {
-    margin-top:1.2rem; padding:1rem;
     background:rgba(192,123,26,.06);
     border:1px dashed rgba(192,123,26,.25);
-    text-align:center;
+    padding:1rem; text-align:center;
+    box-sizing:border-box;
   }
   .cert-sns-text {
     font-size:.72rem; color:#6a5030; margin-bottom:.25rem;
@@ -629,10 +629,12 @@
 
   <!-- ══ 취향증명서 ══ -->
   <div class="screen" id="s-cert">
+
+    <!-- 이미지로 저장될 영역 -->
     <div class="cert-wrap" id="cert-wrap">
       <div class="cert-header" id="cert-header">
         <div class="cert-top-line"></div>
-        <div class="cert-brand">산사원 · 전통술 갤러리</div>
+        <div class="cert-brand">배상면주가 · 산사원</div>
         <div class="cert-title-kr">전통술 취향증명서</div>
         <div class="cert-title-en">Certificate of Taste</div>
         <div class="cert-top-line"></div>
@@ -665,24 +667,26 @@
           </div>
         </div>
       </div>
-      <div class="cert-sns-wrap">
-        <div class="cert-sns-text">📸 이미지 저장 후 인스타그램에 공유하면</div>
-        <div class="cert-sns-gift">🎁 전통술 미니어쳐를 드려요!</div>
-        <div class="cert-sns-hash">#산사원 #전통술취향찾기 #나의전통술취향</div>
-        <a class="cert-sns-account" href="https://www.instagram.com/sansawon_inp" target="_blank">
-          @sansawon_inp 에 태그해주세요 →
-        </a>
-      </div>
-    </div><!-- /.cert-wrap -->
+    </div><!-- /.cert-wrap → 여기까지만 이미지로 저장 -->
 
+    <!-- 이미지 저장 버튼 -->
     <button class="btn-cert" id="btn-download" onclick="downloadCert()" style="max-width:420px;width:100%;margin-top:1.2rem;">
       📥 증명서 이미지 저장하기
     </button>
-    <div style="display:flex;gap:.8rem;margin-top:.6rem;width:100%;max-width:420px;">
-      <button class="btn-again" style="flex:1;" onclick="show('s-result')">← 결과로 돌아가기</button>
-      <button class="btn-again" style="flex:1;" onclick="restart()">↩ 처음부터 다시</button>
+
+    <!-- SNS 이벤트 안내 (이미지에 포함 안 됨) -->
+    <div class="cert-sns-wrap" style="max-width:420px;width:100%;margin-top:.8rem;">
+      <div class="cert-sns-text">📸 이미지 저장 후 인스타그램에 공유하면</div>
+      <div class="cert-sns-gift">🎁 전통술 미니어쳐를 드려요!</div>
+      <div class="cert-sns-hash">#산사원 #전통술취향찾기 #나의전통술취향</div>
+      <a class="cert-sns-account" href="https://www.instagram.com/sansawon_inp" target="_blank">
+        @sansawon_inp 에 태그해주세요 →
+      </a>
     </div>
 
+    <div style="display:flex;gap:.8rem;margin-top:.8rem;width:100%;max-width:420px;">
+      <button class="btn-again" style="flex:1;" onclick="show('s-result')">← 결과로 돌아가기</button>
+      <button class="btn-again" style="flex:1;" onclick="restart()">↩ 처음부터 다시</button>
     </div>
   </div>
 
