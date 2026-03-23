@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>산사원 · 나의 전통술 취향 찾기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:        #12100e;
+    --cream:      #f4ede0;
+    --amber:      #c07b1a;
+    --amber-lt:   #e0a040;
+    --zone1-clr:  #7ab3c8;  /* 부드러운 첫만남 - 맑은 하늘빛 */
+    --zone2-clr:  #b8a46a;  /* 밸런스 미식 - 황금 보리빛 */
+    --zone3-clr:  #7a5c8a;  /* 깊은 밤 - 짙은 자줏빛 */
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Noto Sans KR', sans-serif;
+    background: var(--ink);
+    color: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 배경 패턴 */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 15%, rgba(192,123,26,.07) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 70% at 85% 85%, rgba(122,92,138,.07) 0%, transparent 55%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* 한자 배경 */
+  .bg-char {
+    position:fixed; font-family:'Noto Serif KR',serif;
+    color:rgba(192,123,26,.035); pointer-events:none; z-index:0; user-select:none;
+    font-weight:700;
+  }
+  .bg-char.c1 { font-size:40vw; top:-5%; left:-8%; }
+  .bg-char.c2 { font-size:25vw; bottom:-2%; right:-4%; }
+
+  /* 앱 래퍼 */
+  .app {
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:2.5rem 1.5rem;
+  }
+
+  /* 스크린 전환 */
+  .screen { display:none; width:100%; max-width:500px; flex-direction:column; align-items:center; }
+  .screen.active { display:flex; animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ━━━ 공통 요소 ━━━ */
+  .badge {
+    font-size:.62rem; letter-spacing:.35em; color:var(--amber);
+    margin-bottom:2rem; opacity:.75;
+  }
+
+  .logo {
+    width:68px; height:68px;
+    border:1.5px solid var(--amber); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; margin-bottom:1.6rem;
+    flex-shrink:0;
+  }
+  .logo::after {
+    content:''; position:absolute; inset:6px;
+    border:1px solid rgba(192,123,26,.28); border-radius:50%;
+  }
+  .logo span { font-family:'Noto Serif KR',serif; font-size:1.5rem; color:var(--amber); }
+
+  .divider {
+    width:44px; height:1px;
+    background:linear-gradient(90deg,transparent,var(--amber),transparent);
+    margin:1.4rem 0;
+  }
+
+  /* ━━━ 인트로 ━━━ */
+  .intro-title {
+    font-family:'Noto Serif KR',serif;
+    font-size:clamp(2rem,8vw,2.8rem); font-weight:700;
+    line-height:1.2; text-align:center; margin-bottom:.7rem;
+  }
+  .intro-title em { font-style:normal; color:var(--amber-lt); }
+
+  .intro-sub {
+    font-size:.85rem; color:rgba(244,237,224,.45);
+    text-align:center; line-height:1.8; margin-bottom:.8rem;
+  }
+
+  /* 존 미리보기 */
+  .zones-preview {
+    display:flex; gap:.6rem; margin:1.2rem 0 2.4rem;
+    width:100%;
+  }
+  .zone-chip {
+    flex:1; padding:.65rem .4rem;
+    border:1px solid rgba(244,237,224,.1);
+    text-align:center; position:relative; overflow:hidden;
+    transition:border-color .25s;
+  }
+  .zone-chip .zc-dot {
+    width:8px; height:8px; border-radius:50%;
+    margin:0 auto .35rem;
+  }
+  .zone-chip .zc-name {
+    font-size:.68rem; font-weight:500;
+    line-height:1.35; word-break:keep-all;
+  }
+  .zone-chip .zc-sub {
+    font-size:.58rem; color:rgba(244,237,224,.35);
+    margin-top:.2rem;
+  }
+  .zone-chip.z1 .zc-dot { background:var(--zone1-clr); }
+  .zone-chip.z2 .zc-dot { background:var(--zone2-clr); }
+  .zone-chip.z3 .zc-dot { background:var(--zone3-clr); }
+
+  /* ━━━ 버튼 ━━━ */
+  .btn-start {
+    background:var(--amber); color:var(--ink);
+    border:none; padding:1rem 3rem;
+    font-family:'Noto Serif KR',serif; font-size:1rem; font-weight:600;
+    letter-spacing:.08em; cursor:pointer;
+    clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    position:relative; overflow:hidden;
+    transition:transform .2s, box-shadow .2s;
+  }
+  .btn-start::before {
+    content:''; position:absolute; inset:0;
+    background:rgba(255,255,255,.18);
+    transform:translateX(-110%) skewX(-15deg);
+    transition:transform .4s;
+  }
+  .btn-start:hover::before { transform:translateX(110%) skewX(-15deg); }
+  .btn-start:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(192,123,26,.35); }
+
+  /* ━━━ 진행바 ━━━ */
+  .prog-wrap { width:100%; margin-bottom:2rem; }
+  .prog-meta { display:flex; justify-content:space-between; margin-bottom:.5rem; }
+  .prog-label { font-size:.62rem; letter-spacing:.2em; color:var(--amber); opacity:.65; }
+  .prog-count { font-size:.72rem; color:rgba(244,237,224,.35); font-family:'Noto Serif KR',serif; }
+  .prog-track { height:2px; background:rgba(244,237,224,.08); overflow:hidden; }
+  .prog-fill  { height:100%; background:linear-gradient(90deg,var(--amber),var(--amber-lt)); transition:width .55s cubic-bezier(.22,1,.36,1); }
+
+  /* ━━━ 질문 ━━━ */
+  .q-emoji { font-size:2.6rem; display:block; text-align:center; margin-bottom:.8rem;
+    filter:drop-shadow(0 0 16px rgba(192,123,26,.4));
+    animation:pulse 3s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+
+  .q-num  { font-size:.6rem; letter-spacing:.28em; color:var(--amber); opacity:.55; text-align:center; margin-bottom:.5rem; }
+  .q-text {
+    font-family:'Noto Serif KR',serif;
+    font-size:clamp(1.1rem,4vw,1.35rem); font-weight:600;
+    text-align:center; line-height:1.55; margin-bottom:1.8rem;
+    word-break:keep-all;
+  }
+
+  /* ━━━ 선택지 ━━━ */
+  .opts { width:100%; display:flex; flex-direction:column; gap:.65rem; }
+
+  .opt {
+    background:transparent;
+    border:1px solid rgba(244,237,224,.1);
+    color:var(--cream);
+    padding:.9rem 1.2rem;
+    text-align:left; cursor:pointer;
+    display:flex; align-items:center; gap:.9rem;
+    transition:all .22s; position:relative; overflow:hidden;
+  }
+  .opt::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,rgba(192,123,26,.09),transparent);
+    opacity:0; transition:opacity .22s;
+  }
+  .opt:hover { border-color:var(--amber); transform:translateX(4px); }
+  .opt:hover::before { opacity:1; }
+
+  .opt.sel { border-color:var(--amber); background:rgba(192,123,26,.1); }
+  .opt.sel::before { opacity:1; }
+  .opt.sel .opt-ring { border-color:var(--amber); background:var(--amber); }
+  .opt.sel .opt-ring::after { opacity:1; }
+
+  .opt-ring {
+    width:22px; height:22px; border-radius:50%;
+    border:1.5px solid rgba(244,237,224,.22);
+    flex-shrink:0; position:relative; transition:all .2s;
+  }
+  .opt-ring::after {
+    content:''; position:absolute; inset:5px;
+    background:var(--ink); border-radius:50%; opacity:0; transition:opacity .2s;
+  }
+
+  .opt-body { flex:1; }
+  .opt-title { font-size:.9rem; font-weight:500; }
+  .opt-desc  { font-size:.7rem; color:rgba(244,237,224,.4); margin-top:.18rem; line-height:1.4; }
+
+  /* ━━━ 다음 버튼 ━━━ */
+  .next-row { width:100%; display:flex; justify-content:flex-end; margin-top:1.6rem; }
+  .btn-next {
+    background:transparent; border:1px solid var(--amber);
+    color:var(--amber); padding:.65rem 1.8rem;
+    font-family:'Noto Serif KR',serif; font-size:.82rem; letter-spacing:.12em;
+    cursor:pointer; transition:all .22s;
+    opacity:0; pointer-events:none;
+  }
+  .btn-next.on { opacity:1; pointer-events:all; }
+  .btn-next:hover { background:var(--amber); color:var(--ink); }
+
+  /* ━━━ 결과 ━━━ */
+  .res-glow {
+    position:absolute; width:280px; height:280px;
+    border-radius:50%; filter:blur(90px); opacity:.15;
+    pointer-events:none; top:-80px;
+  }
+
+  .res-badge {
+    width:110px; height:110px; position:relative; margin-bottom:1.8rem; flex-shrink:0;
+  }
+  .res-ring {
+    position:absolute; inset:0; border-radius:50%;
+    border:1.5px solid var(--amber);
+    animation:spin 12s linear infinite;
+  }
+  .res-ring::before {
+    content:''; position:absolute;
+    top:-3px; left:50%; transform:translateX(-50%);
+    width:6px; height:6px; background:var(--amber); border-radius:50%;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  .res-inner {
+    position:absolute; inset:10px; border-radius:50%;
+    border:1px solid rgba(192,123,26,.2);
+    background:rgba(192,123,26,.06);
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.6rem;
+  }
+
+  .res-type  { font-size:.6rem; letter-spacing:.3em; color:var(--amber); opacity:.65; margin-bottom:.5rem; }
+  .res-title {
+    font-family:'Noto Serif KR',serif;
+    font-size:clamp(1.6rem,6vw,2.2rem); font-weight:700;
+    text-align:center; margin-bottom:.4rem;
+  }
+  .res-sub   { font-size:.82rem; text-align:center; margin-bottom:1.4rem; letter-spacing:.04em; }
+  .res-desc  {
+    font-size:.84rem; color:rgba(244,237,224,.55);
+    text-align:center; line-height:1.85; margin-bottom:1.8rem;
+    word-break:keep-all; white-space:pre-line;
+  }
+
+  /* 스펙 바 */
+  .spec-wrap { width:100%; margin-bottom:1.6rem; }
+  .spec-row  { margin-bottom:.75rem; }
+  .spec-meta { display:flex; justify-content:space-between;
+    font-size:.65rem; color:rgba(244,237,224,.32); margin-bottom:.3rem; }
+  .spec-track { height:3px; background:rgba(244,237,224,.07); overflow:hidden; }
+  .spec-fill  { height:100%; transition:width 1.3s cubic-bezier(.22,1,.36,1); }
+
+  /* 추천 술 */
+  .rec-label { font-size:.62rem; letter-spacing:.22em; color:var(--amber); opacity:.6; margin-bottom:.7rem; }
+  .rec-grid  { width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; margin-bottom:1.8rem; }
+  .rec-card  {
+    background:rgba(244,237,224,.03);
+    border:1px solid rgba(244,237,224,.07);
+    padding:.9rem .5rem; text-align:center;
+    transition:all .22s; cursor:default;
+  }
+  .rec-card:hover { border-color:rgba(192,123,26,.35); transform:translateY(-2px); }
+  .rec-emoji { font-size:1.5rem; display:block; margin-bottom:.35rem; }
+  .rec-name  { font-size:.72rem; font-weight:500; line-height:1.3; }
+  .rec-type  { font-size:.58rem; color:rgba(244,237,224,.3); margin-top:.15rem; }
+
+  /* 존 뱃지 */
+  .zone-badge {
+    display:inline-flex; align-items:center; gap:.5rem;
+    border:1px solid; padding:.5rem 1.2rem;
+    margin-bottom:1.8rem; font-size:.75rem; font-weight:500;
+  }
+  .zone-badge .zdot { width:8px; height:8px; border-radius:50%; }
+
+  /* 버튼들 */
+  .btn-again {
+    background:transparent; border:1px solid rgba(244,237,224,.18);
+    color:rgba(244,237,224,.45); padding:.6rem 1.6rem;
+    font-size:.75rem; letter-spacing:.1em; cursor:pointer;
+    transition:all .22s;
+  }
+  .btn-again:hover { border-color:rgba(244,237,224,.4); color:var(--cream); }
+
+  /* ━━━ 존 이동 유도 카드 ━━━ */
+  .goto-card {
+    width:100%;
+    border:1.5px solid;
+    padding:1.5rem 1.2rem;
+    text-align:center;
+    margin-bottom:1rem;
+    position:relative;
+    overflow:hidden;
+    transition:border-color .3s;
+  }
+  .goto-card::before {
+    content:'';
+    position:absolute; inset:0;
+    opacity:.06;
+  }
+  .goto-arrow {
+    font-size:1.4rem;
+    margin-bottom:.4rem;
+    animation:bounce 1.4s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform:translateY(0); }
+    50%      { transform:translateY(5px); }
+  }
+  .goto-label {
+    font-size:.6rem; letter-spacing:.28em;
+    color:rgba(244,237,224,.45);
+    margin-bottom:.55rem;
+  }
+  .goto-zone {
+    font-family:'Noto Serif KR',serif;
+    font-size:1.45rem; font-weight:700;
+    margin-bottom:.35rem;
+  }
+  .goto-sub {
+    font-size:.75rem;
+    color:rgba(244,237,224,.5);
+    line-height:1.55;
+  }
+
+  .btn-cert {
+    width:100%; background:var(--amber); color:var(--ink);
+    border:none; padding:1rem;
+    font-family:'Noto Serif KR',serif; font-size:1rem; font-weight:700;
+    letter-spacing:.06em; cursor:pointer; margin-bottom:.7rem;
+    transition:all .22s; position:relative; overflow:hidden;
+  }
+  .btn-cert::before {
+    content:''; position:absolute; inset:0;
+    background:rgba(255,255,255,.15);
+    transform:translateX(-110%) skewX(-15deg);
+    transition:transform .4s;
+  }
+  .btn-cert:hover::before { transform:translateX(110%) skewX(-15deg); }
+  .btn-cert:hover { filter:brightness(1.08); transform:translateY(-1px); }
+
+  /* ━━━ 취향증명서 ━━━ */
+  #s-cert {
+    padding-bottom: 1rem;
+  }
+
+  .cert-wrap {
+    width:100%; max-width:420px;
+    background: #fdf8f0;
+    color: #2a1f0e;
+    border: 1.5px solid #d4b896;
+    padding: 2rem 1.8rem 1.6rem;
+    position: relative;
+    box-shadow: 0 8px 40px rgba(0,0,0,.18), inset 0 0 0 6px rgba(212,184,150,.15);
+  }
+
+  /* 모서리 장식 */
+  .cert-wrap::before, .cert-wrap::after {
+    content:''; position:absolute;
+    width:20px; height:20px;
+    border-color:#c07b1a; border-style:solid;
+  }
+  .cert-wrap::before { top:10px; left:10px; border-width:2px 0 0 2px; }
+  .cert-wrap::after  { bottom:10px; right:10px; border-width:0 2px 2px 0; }
+
+  /* 헤더 */
+  .cert-top-line {
+    height:1px;
+    background:linear-gradient(90deg, transparent, #c07b1a, transparent);
+    margin:.5rem 0;
+  }
+  .cert-brand {
+    font-size:.6rem; letter-spacing:.3em;
+    color:#c07b1a; text-align:center; margin-bottom:.3rem;
+    opacity:.8;
+  }
+  .cert-title-kr {
+    font-family:'Noto Serif KR',serif;
+    font-size:1.5rem; font-weight:700;
+    text-align:center; color:#1a1208;
+    letter-spacing:.05em; margin-bottom:.2rem;
+  }
+  .cert-title-en {
+    font-size:.62rem; letter-spacing:.3em;
+    color:#9a7a50; text-align:center; margin-bottom:.3rem;
+  }
+
+  /* 존 영역 */
+  .cert-zone-area {
+    text-align:center; padding:1.2rem 0 .8rem;
+  }
+  .cert-zone-emoji {
+    font-size:2.8rem; display:block; margin-bottom:.5rem;
+    filter:drop-shadow(0 2px 8px rgba(192,123,26,.25));
+  }
+  .cert-zone-label {
+    font-size:.58rem; letter-spacing:.28em;
+    color:#9a7a50; margin-bottom:.3rem;
+  }
+  .cert-zone-name {
+    font-family:'Noto Serif KR',serif;
+    font-size:1.7rem; font-weight:700;
+    color:#1a1208; margin-bottom:.3rem;
+    line-height:1.2;
+  }
+  .cert-zone-tag {
+    font-size:.72rem; color:#7a6040;
+  }
+
+  /* 장식 구분선 */
+  .cert-divider-fancy {
+    display:flex; align-items:center; gap:.6rem;
+    margin:.9rem 0;
+  }
+  .cert-div-line {
+    flex:1; height:1px;
+    background:linear-gradient(90deg, transparent, #d4b896, transparent);
+    display:block;
+  }
+  .cert-div-char {
+    font-family:'Noto Serif KR',serif;
+    font-size:.9rem; color:#c07b1a; opacity:.5;
+    flex-shrink:0;
+  }
+
+  /* 추천 주종 */
+  .cert-rec-label {
+    font-size:.6rem; letter-spacing:.22em;
+    color:#9a7a50; text-align:center; margin-bottom:.7rem;
+  }
+  .cert-rec-row {
+    display:flex; gap:.5rem;
+    margin-bottom:.3rem;
+  }
+  .cert-rec-item {
+    flex:1; text-align:center;
+    background:rgba(192,123,26,.06);
+    border:1px solid rgba(192,123,26,.15);
+    padding:.6rem .3rem;
+  }
+  .cert-rec-item-emoji { font-size:1.3rem; display:block; margin-bottom:.25rem; }
+  .cert-rec-item-name  { font-size:.68rem; font-weight:600; color:#2a1f0e; line-height:1.3; }
+  .cert-rec-item-type  { font-size:.56rem; color:#9a7a50; margin-top:.15rem; }
+
+  /* 스펙 바 (증명서용) */
+  .cert-spec-wrap { margin-bottom:.4rem; }
+  .cert-spec-row  { display:flex; align-items:center; gap:.7rem; margin-bottom:.5rem; }
+  .cert-spec-label{ font-size:.65rem; color:#7a6040; width:68px; flex-shrink:0; text-align:right; }
+  .cert-spec-track{
+    flex:1; height:5px;
+    background:rgba(192,123,26,.1);
+    border-radius:3px; overflow:hidden;
+  }
+  .cert-spec-fill {
+    height:100%; border-radius:3px;
+    transition:width 1.2s cubic-bezier(.22,1,.36,1);
+  }
+  .cert-spec-val { font-size:.6rem; color:#9a7a50; width:28px; text-align:right; flex-shrink:0; }
+
+  /* 푸터 — 도장 + 날짜 */
+  .cert-footer {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:.8rem; padding-top:.8rem;
+    border-top:1px dashed rgba(192,123,26,.25);
+  }
+  .cert-date {
+    font-size:.65rem; color:#9a7a50; line-height:1.6;
+  }
+  .cert-stamp {
+    width:56px; height:56px;
+    border:2.5px solid rgba(192,50,50,.6);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    transform:rotate(-12deg);
+    box-shadow:inset 0 0 0 2px rgba(192,50,50,.15);
+  }
+  .cert-stamp-inner { text-align:center; }
+  .cert-stamp-text {
+    font-family:'Noto Serif KR',serif;
+    font-size:.65rem; font-weight:700;
+    color:rgba(192,50,50,.75); line-height:1.2;
+  }
+  .cert-stamp-sub {
+    font-size:.5rem; color:rgba(192,50,50,.6); letter-spacing:.1em;
+  }
+
+  /* SNS 인증 유도 */
+  .cert-sns-wrap {
+    margin-top:1.2rem; padding:1rem;
+    background:rgba(192,123,26,.06);
+    border:1px dashed rgba(192,123,26,.25);
+    text-align:center;
+  }
+  .cert-sns-text {
+    font-size:.72rem; color:#6a5030; margin-bottom:.25rem;
+  }
+  .cert-sns-gift {
+    font-family:'Noto Serif KR',serif;
+    font-size:.9rem; font-weight:700;
+    color:#c07b1a; margin-bottom:.4rem;
+  }
+  .cert-sns-hash {
+    font-size:.62rem; color:#9a7a50; letter-spacing:.04em; line-height:1.8;
+  }
+  .cert-sns-account {
+    display:inline-block; margin-top:.5rem;
+    font-size:.72rem; font-weight:600;
+    color:#c07b1a; text-decoration:none;
+    border-bottom:1px solid rgba(192,123,26,.35);
+    padding-bottom:.1rem;
+    transition:opacity .2s;
+  }
+  .cert-sns-account:hover { opacity:.7; }
+    .zones-preview { flex-direction:column; }
+    .rec-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-char c1">酒</div>
+<div class="bg-char c2">味</div>
+
+<div class="app">
+
+  <!-- ══ 인트로 ══ -->
+  <div class="screen active" id="s-intro">
+    <div class="badge">산사원 · 전통술 갤러리</div>
+    <div class="logo"><span>酒</span></div>
+    <h1 class="intro-title">나의 전통술<br>취향은 <em>어디?</em></h1>
+    <div class="divider"></div>
+    <p class="intro-sub">6가지 질문으로 당신의 시음존을 찾아드립니다<br>약 1분이면 충분해요 🍶</p>
+
+    <div class="zones-preview">
+      <div class="zone-chip z1">
+        <div class="zc-dot"></div>
+        <div class="zc-name">부드러운<br>첫만남</div>
+        <div class="zc-sub">가볍고 청량하게</div>
+      </div>
+      <div class="zone-chip z2">
+        <div class="zc-dot"></div>
+        <div class="zc-name">밸런스<br>미식</div>
+        <div class="zc-sub">음식과 조화롭게</div>
+      </div>
+      <div class="zone-chip z3">
+        <div class="zc-dot"></div>
+        <div class="zc-name">깊은 밤</div>
+        <div class="zc-sub">진하고 묵직하게</div>
+      </div>
+    </div>
+
+    <button class="btn-start" onclick="goQuiz()">취향 찾기 시작 →</button>
+  </div>
+
+  <!-- ══ 퀴즈 ══ -->
+  <div class="screen" id="s-quiz">
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span class="prog-label">TASTE JOURNEY</span>
+        <span class="prog-count" id="prog-count">1 / 6</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:16.6%"></div></div>
+    </div>
+
+    <span class="q-emoji" id="q-emoji">🌾</span>
+    <div class="q-num"  id="q-num">QUESTION 01</div>
+    <h2  class="q-text" id="q-text">…</h2>
+
+    <div class="opts" id="opts"></div>
+    <div class="next-row">
+      <button class="btn-next" id="btn-next" onclick="nextQ()">다음 →</button>
+    </div>
+  </div>
+
+  <!-- ══ 결과 ══ -->
+  <div class="screen" id="s-result" style="position:relative;">
+    <div class="res-glow" id="res-glow"></div>
+
+    <div class="res-badge">
+      <div class="res-ring"></div>
+      <div class="res-inner" id="res-emoji">🍶</div>
+    </div>
+
+    <div class="res-type">당신의 전통술 취향존</div>
+    <h2 class="res-title" id="res-title">—</h2>
+
+    <div class="zone-badge" id="zone-badge">
+      <span class="zdot" id="zone-dot"></span>
+      <span id="zone-tag">—</span>
+    </div>
+
+    <div class="divider"></div>
+    <p class="res-desc" id="res-desc">…</p>
+
+    <div class="spec-wrap" id="spec-wrap"></div>
+
+    <div class="rec-label">✦ 이런 전통주를 추천해요 ✦</div>
+    <div class="rec-grid" id="rec-grid"></div>
+
+    <div class="goto-card" id="goto-card">
+      <div class="goto-arrow" id="goto-arrow">↓</div>
+      <div class="goto-label">지금 바로 이동하세요</div>
+      <div class="goto-zone" id="goto-zone">—</div>
+      <div class="goto-sub" id="goto-sub">—</div>
+    </div>
+
+    <button class="btn-cert" onclick="showCert()">🎖 나의 취향증명서 보기</button>
+    <button class="btn-again" onclick="restart()">↩ 처음부터 다시</button>
+  </div>
+
+  <!-- ══ 취향증명서 ══ -->
+  <div class="screen" id="s-cert">
+    <div class="cert-wrap" id="cert-wrap">
+      <div class="cert-header" id="cert-header">
+        <div class="cert-top-line"></div>
+        <div class="cert-brand">산사원 · 전통술 갤러리</div>
+        <div class="cert-title-kr">전통술 취향증명서</div>
+        <div class="cert-title-en">Certificate of Taste</div>
+        <div class="cert-top-line"></div>
+      </div>
+      <div class="cert-zone-area">
+        <div class="cert-zone-emoji" id="cert-emoji">🍶</div>
+        <div class="cert-zone-label">취향존</div>
+        <div class="cert-zone-name" id="cert-zone-name">—</div>
+        <div class="cert-zone-tag"  id="cert-zone-tag">—</div>
+      </div>
+      <div class="cert-divider-fancy">
+        <span class="cert-div-line"></span>
+        <span class="cert-div-char">酒</span>
+        <span class="cert-div-line"></span>
+      </div>
+      <div class="cert-rec-label">추천 전통주</div>
+      <div class="cert-rec-row" id="cert-rec-row"></div>
+      <div class="cert-divider-fancy">
+        <span class="cert-div-line"></span>
+        <span class="cert-div-char">味</span>
+        <span class="cert-div-line"></span>
+      </div>
+      <div class="cert-spec-wrap" id="cert-spec-wrap"></div>
+      <div class="cert-footer">
+        <div class="cert-date" id="cert-date">—</div>
+        <div class="cert-stamp" id="cert-stamp">
+          <div class="cert-stamp-inner">
+            <div class="cert-stamp-text">산사원</div>
+            <div class="cert-stamp-sub">인증</div>
+          </div>
+        </div>
+      </div>
+      <div class="cert-sns-wrap">
+        <div class="cert-sns-text">📸 이미지 저장 후 인스타그램에 공유하면</div>
+        <div class="cert-sns-gift">🎁 전통술 미니어쳐를 드려요!</div>
+        <div class="cert-sns-hash">#산사원 #전통술취향찾기 #나의전통술취향</div>
+        <a class="cert-sns-account" href="https://www.instagram.com/sansawon_inp" target="_blank">
+          @sansawon_inp 에 태그해주세요 →
+        </a>
+      </div>
+    </div><!-- /.cert-wrap -->
+
+    <button class="btn-cert" id="btn-download" onclick="downloadCert()" style="max-width:420px;width:100%;margin-top:1.2rem;">
+      📥 증명서 이미지 저장하기
+    </button>
+    <div style="display:flex;gap:.8rem;margin-top:.6rem;width:100%;max-width:420px;">
+      <button class="btn-again" style="flex:1;" onclick="show('s-result')">← 결과로 돌아가기</button>
+      <button class="btn-again" style="flex:1;" onclick="restart()">↩ 처음부터 다시</button>
+    </div>
+
+    </div>
+  </div>
+
+</div><!-- /.app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* ── 데이터 ── */
+const QS = [
+  {
+    emoji:'🌅', num:'QUESTION 01',
+    text:'술을 마시는 이유는?',
+    opts:[
+      {t:'분위기만 살짝', d:'기분 내려고 가볍게', s:1},
+      {t:'음식이랑 잘 어울리게', d:'페어링을 즐기는 편', s:2},
+      {t:'맛·향 제대로 탐구', d:'술 자체를 깊이 즐겨', s:3},
+    ]
+  },
+  {
+    emoji:'☕', num:'QUESTION 02',
+    text:'평소 즐기는 음료 스타일은?',
+    opts:[
+      {t:'연하고 달콤하게', d:'디카페인·과일음료·연한 아메리카노', s:1},
+      {t:'고소하고 부드럽게', d:'라떼·곡물음료·따뜻한 차', s:2},
+      {t:'진하고 쓰게', d:'에스프레소·다크 콜드브루', s:3},
+    ]
+  },
+  {
+    emoji:'🍽️', num:'QUESTION 03',
+    text:'안주 취향은?',
+    opts:[
+      {t:'과일·가벼운 치즈', d:'술의 향이 방해받지 않길 바라', s:1},
+      {t:'전·수육·구이류', d:'전통술엔 역시 한식이지', s:2},
+      {t:'육회·진한 양념요리', d:'진하게 먹고 진하게 마실 거야', s:3},
+    ]
+  },
+  {
+    emoji:'✨', num:'QUESTION 04',
+    text:'향보다 내게 중요한 건?',
+    opts:[
+      {t:'부드러움', d:'목 넘김이 편안해야 해', s:1},
+      {t:'균형', d:'맛과 향이 조화로워야 해', s:2},
+      {t:'깊이', d:'복잡하고 여운이 긴 게 좋아', s:3},
+    ]
+  },
+  {
+    emoji:'🥃', num:'QUESTION 05',
+    text:'취기 느낌은?',
+    opts:[
+      {t:'거의 없어도 됨', d:'맑은 정신으로 즐기고 싶어', s:1},
+      {t:'기분 좋게', d:'살짝 달아오르는 정도가 딱', s:2},
+      {t:'확실하게', d:'제대로 취하는 게 좋아', s:3},
+    ]
+  },
+  {
+    emoji:'🔍', num:'QUESTION 06',
+    text:'술 고를 때 중요한 건?',
+    opts:[
+      {t:'부담없음', d:'도수·맛 모두 가벼운 게 최고', s:1},
+      {t:'음식 궁합', d:'안주랑 잘 맞는 걸 고르고 싶어', s:2},
+      {t:'스토리와 개성', d:'양조장·지역·제조법이 궁금해', s:3},
+    ]
+  },
+];
+
+/* 결과 정의 */
+const ZONES = {
+  zone1: {
+    emoji:'🌸', title:'부드러운 첫만남',
+    tag:'가볍고 청량한 전통주의 세계',
+    glowColor:'#7ab3c8', dotColor:'var(--zone1-clr)',
+    badgeBorder:'var(--zone1-clr)',
+    desc:`술보다 분위기와 대화를 즐기는 당신에게\n가볍고 달콤하며 색이 아름다운 전통주가 잘 맞아요.\n부담 없이 홀짝이며 전통술의 세계로 첫발을 내디뎌 보세요.`,
+    specs:[
+      {label:'청량·달콤함', val:90, color:'#7ab3c8'},
+      {label:'부드러움',   val:85, color:'#a8d4e8'},
+      {label:'도수',       val:20, color:'#7ab3c8'},
+    ],
+    recs:[
+      {e:'🌾',n:'느린마을 막걸리', t:'탁주 · 부드럽고 깔끔'},
+      {e:'❄️',n:'빙탄복',          t:'청량하고 달콤'},
+      {e:'🌸',n:'호감',            t:'가볍게 즐기기 딱'},
+    ],
+    staffNote:'가볍고 청량한 주종 안내 권장\n느린마을 막걸리 · 빙탄복 · 호감',
+  },
+  zone2: {
+    emoji:'🌾', title:'밸런스 미식',
+    tag:'음식과 어울리는 균형 잡힌 맛',
+    glowColor:'#b8a46a', dotColor:'var(--zone2-clr)',
+    badgeBorder:'var(--zone2-clr)',
+    desc:`음식과 전통술의 조화를 즐기는 미식가 타입!\n적당한 도수에 풍부한 향미의 약주가 잘 어울려요.\n페어링을 즐기며 천천히 음미해 보세요.`,
+    specs:[
+      {label:'균형감', val:90, color:'#c8b060'},
+      {label:'향미',   val:80, color:'#d4be78'},
+      {label:'도수',   val:55, color:'#c8b060'},
+    ],
+    recs:[
+      {e:'🌿',n:'산사춘',      t:'산사나무 열매 약주'},
+      {e:'🍇',n:'복분자음',    t:'복분자 과실주'},
+      {e:'🍶',n:'느린마을 약주',t:'균형 잡힌 전통 약주'},
+    ],
+    staffNote:'음식 페어링에 강한 주종 안내 권장\n산사춘 · 복분자음 · 느린마을 약주',
+  },
+  zone3: {
+    emoji:'🌙', title:'깊은 밤',
+    tag:'진하고 여운이 긴 전통주의 정수',
+    glowColor:'#7a5c8a', dotColor:'var(--zone3-clr)',
+    badgeBorder:'var(--zone3-clr)',
+    desc:`복잡한 풍미와 깊은 여운을 즐길 줄 아는 당신.\n쌍화주의 한방 깊이, 오매락의 진한 여운을 경험해보세요.\n한 잔에 담긴 장인의 시간을 천천히 느껴보세요.`,
+    specs:[
+      {label:'풍미 깊이', val:95, color:'#9a7aaa'},
+      {label:'복잡성',   val:88, color:'#b090c0'},
+      {label:'도수',     val:80, color:'#9a7aaa'},
+    ],
+    recs:[
+      {e:'🌑',n:'쌍화주',   t:'한방 약재 전통주'},
+      {e:'🔥',n:'소주21',   t:'전통 증류소주 21도'},
+      {e:'🍯',n:'오매락 25',t:'매실 증류주 25도'},
+    ],
+    staffNote:'진하고 개성 강한 주종 안내 권장\n쌍화주 · 소주21 · 오매락25\n스토리 설명 함께 권장',
+  },
+};
+
+/* ── 상태 ── */
+let curQ = 0, totalScore = 0, selIdx = -1;
+
+/* ── 진행 ── */
+function goQuiz() {
+  curQ = 0; totalScore = 0; selIdx = -1;
+  showQ();
+  show('s-quiz');
+}
+
+function showQ() {
+  const q = QS[curQ];
+  document.getElementById('q-emoji').textContent = q.emoji;
+  document.getElementById('q-num').textContent   = q.num;
+  document.getElementById('q-text').textContent  = q.text;
+  document.getElementById('prog-count').textContent = `${curQ+1} / ${QS.length}`;
+  document.getElementById('prog-fill').style.width = `${((curQ+1)/QS.length)*100}%`;
+
+  const container = document.getElementById('opts');
+  container.innerHTML = '';
+  selIdx = -1;
+  const btnNext = document.getElementById('btn-next');
+  btnNext.classList.remove('on');
+  btnNext.textContent = curQ === QS.length-1 ? '결과 보기 →' : '다음 →';
+
+  q.opts.forEach((o,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `
+      <div class="opt-ring"></div>
+      <div class="opt-body">
+        <div class="opt-title">${o.t}</div>
+        <div class="opt-desc">${o.d}</div>
+      </div>`;
+    btn.onclick = () => pick(i, o.s);
+    container.appendChild(btn);
+  });
+}
+
+function pick(idx, score) {
+  selIdx = idx;
+  document.querySelectorAll('.opt').forEach((b,i) => b.classList.toggle('sel', i===idx));
+  document.getElementById('btn-next').classList.add('on');
+  // 점수 미리 저장하지 않고 인덱스만 기억
+  window._pendingScore = score;
+}
+
+function nextQ() {
+  if (selIdx < 0) return;
+  totalScore += window._pendingScore;
+  curQ++;
+  if (curQ >= QS.length) { showResult(); return; }
+  // 애니메이션 리셋
+  const s = document.getElementById('s-quiz');
+  s.style.animation='none'; s.offsetHeight;
+  s.style.animation='fadeUp .4s cubic-bezier(.22,1,.36,1) both';
+  showQ();
+}
+
+/* ── 결과 ── */
+function showResult() {
+  // 6문항 × 최소1 = 6, 최대3 = 18
+  // 산뜻(zone1): 6~9, 균형(zone2): 10~14, 묵직(zone3): 15~18
+  let key;
+  if      (totalScore <= 9)  key = 'zone1';
+  else if (totalScore <= 13) key = 'zone2';
+  else                        key = 'zone3';
+
+  const z = ZONES[key];
+  window._lastZoneKey = key;
+
+  document.getElementById('res-glow').style.background = z.glowColor;
+  document.getElementById('res-emoji').textContent = z.emoji;
+  document.getElementById('res-title').textContent = z.title;
+  document.getElementById('res-desc').textContent  = z.desc;
+
+  // 존 뱃지
+  const zb = document.getElementById('zone-badge');
+  zb.style.borderColor = z.badgeBorder;
+  document.getElementById('zone-dot').style.background = z.dotColor;
+  document.getElementById('zone-tag').textContent = z.tag;
+
+  // 스펙바
+  document.getElementById('spec-wrap').innerHTML = z.specs.map(s=>`
+    <div class="spec-row">
+      <div class="spec-meta"><span>${s.label}</span><span>${s.val}%</span></div>
+      <div class="spec-track">
+        <div class="spec-fill" style="width:0%;background:${s.color}" data-v="${s.val}"></div>
+      </div>
+    </div>`).join('');
+
+  // 추천술
+  document.getElementById('rec-grid').innerHTML = z.recs.map(r=>`
+    <div class="rec-card">
+      <span class="rec-emoji">${r.e}</span>
+      <div class="rec-name">${r.n}</div>
+      <div class="rec-type">${r.t}</div>
+    </div>`).join('');
+
+  // 존 이동 카드
+  const gotoZoneData = {
+    zone1: { zone:'부드러운 첫만남 존', sub:'느린마을 막걸리 · 빙탄복 · 호감\n가볍고 청량한 전통주를 셀프로 시음해보세요 🌸', border:'#7ab3c8', bg:'rgba(122,179,200,.07)' },
+    zone2: { zone:'밸런스 미식 존',    sub:'산사춘 · 복분자음 · 느린마을 약주\n음식과 어울리는 전통주를 셀프로 시음해보세요 🌾', border:'#b8a46a', bg:'rgba(184,164,106,.07)' },
+    zone3: { zone:'깊은 밤 존',        sub:'쌍화주 · 소주21 · 오매락25\n진하고 깊은 전통주를 셀프로 시음해보세요 🌙', border:'#9a7aaa', bg:'rgba(154,122,170,.07)' },
+  };
+  const gd = gotoZoneData[key];
+  const card = document.getElementById('goto-card');
+  card.style.borderColor = gd.border;
+  card.style.background  = gd.bg;
+  document.getElementById('goto-zone').textContent = gd.zone;
+  document.getElementById('goto-sub').style.whiteSpace = 'pre-line';
+  document.getElementById('goto-sub').textContent  = gd.sub;
+  document.getElementById('goto-arrow').style.color = gd.border;
+
+  show('s-result');
+  setTimeout(()=>{
+    document.querySelectorAll('.spec-fill').forEach(el=>{
+      el.style.width = el.dataset.v + '%';
+    });
+  }, 350);
+}
+
+function showCert() {
+  const key = window._lastZoneKey;
+  const z   = ZONES[key];
+
+  // 이모지·존이름·태그
+  document.getElementById('cert-emoji').textContent     = z.emoji;
+  document.getElementById('cert-zone-name').textContent = z.title;
+  document.getElementById('cert-zone-tag').textContent  = z.tag;
+
+  // 존별 컬러
+  const certColors = {
+    zone1: { accent:'#5a9fbf', stamp:'rgba(90,159,191,.7)', bg:'#f0f8fc' },
+    zone2: { accent:'#a07830', stamp:'rgba(160,120,48,.7)',  bg:'#fdf8ee' },
+    zone3: { accent:'#7a5a9a', stamp:'rgba(122,90,154,.7)', bg:'#f8f4fc' },
+  };
+  const cc = certColors[key];
+  const wrap = document.getElementById('cert-wrap');
+  wrap.style.background = cc.bg;
+  // 도장 색상
+  document.getElementById('cert-stamp').style.borderColor = cc.stamp;
+  document.querySelectorAll('.cert-stamp-text, .cert-stamp-sub').forEach(el => {
+    el.style.color = cc.stamp;
+  });
+
+  // 추천술
+  document.getElementById('cert-rec-row').innerHTML = z.recs.map(r=>`
+    <div class="cert-rec-item">
+      <span class="cert-rec-item-emoji">${r.e}</span>
+      <div class="cert-rec-item-name">${r.n}</div>
+      <div class="cert-rec-item-type">${r.t}</div>
+    </div>`).join('');
+
+  // 스펙바
+  document.getElementById('cert-spec-wrap').innerHTML = z.specs.map(s=>`
+    <div class="cert-spec-row">
+      <div class="cert-spec-label">${s.label}</div>
+      <div class="cert-spec-track">
+        <div class="cert-spec-fill" style="width:0%;background:${s.color}" data-v="${s.val}"></div>
+      </div>
+      <div class="cert-spec-val">${s.val}%</div>
+    </div>`).join('');
+
+  // 날짜
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
+  document.getElementById('cert-date').innerHTML = `발급일<br>${dateStr}<br>산사원 전통술 갤러리`;
+
+  show('s-cert');
+  setTimeout(()=>{
+    document.querySelectorAll('.cert-spec-fill').forEach(el=>{
+      el.style.width = el.dataset.v + '%';
+    });
+  }, 400);
+}
+
+async function downloadCert() {
+  const btn = document.getElementById('btn-download');
+  btn.textContent = '⏳ 이미지 생성 중...';
+  btn.disabled = true;
+
+  try {
+    const el = document.getElementById('cert-wrap');
+    const canvas = await html2canvas(el, {
+      scale: 3,               // 고해상도
+      useCORS: true,
+      backgroundColor: null,
+      logging: false,
+      windowWidth: el.scrollWidth,
+      windowHeight: el.scrollHeight,
+    });
+
+    // 다운로드 링크 생성
+    const link = document.createElement('a');
+    link.download = '산사원_전통술_취향증명서.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    btn.textContent = '✅ 저장 완료! 인스타에 올려주세요 🍶';
+    btn.style.background = '#5a9a6a';
+    setTimeout(() => {
+      btn.textContent = '📥 증명서 이미지 저장하기';
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 3000);
+  } catch(e) {
+    btn.textContent = '📥 증명서 이미지 저장하기';
+    btn.disabled = false;
+    alert('이미지 저장에 실패했어요. 화면을 캡처해서 사용해주세요!');
+  }
+}
+
+function restart()  { show('s-intro'); }
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.style.animation='none'; el.offsetHeight;
+  el.style.animation='fadeUp .5s cubic-bezier(.22,1,.36,1) both';
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
