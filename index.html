@@ -778,6 +778,22 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+/* ── 집계 연동 ── */
+// ★ Apps Script 웹앱 배포 후 받은 URL을 아래에 붙여넣으세요
+const TRACK_URL = 'https://script.google.com/macros/s/AKfycbyzdML6Kp8y0WH8xPbdWKU9KOm_9Pl29kUsH-r4vgnj4jTohtHn4rWDHiglODjyOFhIyQ/exec';
+const SID = Math.random().toString(36).slice(2,8) + Date.now().toString(36);
+const SRC = new URLSearchParams(location.search).get('src') || 'qr';
+let _answers = [];
+function track(ev, extra) {
+  if (!TRACK_URL.startsWith('https')) return;
+  const body = JSON.stringify(Object.assign({sid:SID, ev:ev, src:SRC}, extra||{}));
+  try {
+    fetch(TRACK_URL, {method:'POST', mode:'no-cors', keepalive:true,
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, body:body});
+  } catch(e) {}
+}
+window.addEventListener('load', () => track('visit'));
+
 /* ── 데이터 ── */
 const QS = [
   {
@@ -1055,6 +1071,7 @@ function drawRadar(canvasId, data, color) {
 function openPopup(name) {
   const d = DRINKS[name];
   if (!d) return;
+  track('drink_click', {zone:window._lastZoneKey, item:name});
   document.getElementById('popup-emoji').textContent = d.e;
   document.getElementById('popup-name').textContent  = name;
   document.getElementById('popup-type').textContent  = d.type;
@@ -1079,6 +1096,8 @@ let curQ = 0, totalScore = 0, selIdx = -1;
 /* ── 진행 ── */
 function goQuiz() {
   curQ = 0; totalScore = 0; selIdx = -1;
+  _answers = [];
+  track('start');
   showQ();
   show('s-quiz');
 }
@@ -1123,6 +1142,8 @@ function pick(idx, score) {
 function nextQ() {
   if (selIdx < 0) return;
   totalScore += window._pendingScore;
+  _answers.push(selIdx+1);
+  track('answer', {q:curQ+1, opt:selIdx+1});
   curQ++;
   if (curQ >= QS.length) { showResult(); return; }
   // 애니메이션 리셋
@@ -1143,6 +1164,7 @@ function showResult() {
 
   const z = ZONES[key];
   window._lastZoneKey = key;
+  track('complete', {zone:key, score:totalScore, answers:_answers.join('')});
 
   document.getElementById('res-glow').style.background = z.glowColor;
   document.getElementById('res-emoji').textContent = z.emoji;
@@ -1199,6 +1221,7 @@ function showResult() {
 function showCert() {
   const key = window._lastZoneKey;
   const z   = ZONES[key];
+  track('cert_view', {zone:key});
 
   // 이모지·존이름·태그
   document.getElementById('cert-emoji').textContent     = z.emoji;
@@ -1272,6 +1295,7 @@ async function downloadCert() {
     link.download = '산사원_전통술_취향증명서.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+    track('cert_save', {zone:window._lastZoneKey});
 
     btn.textContent = '✅ 저장 완료! 인스타에 올려주세요 🍶';
     btn.style.background = '#5a9a6a';
